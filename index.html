@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shuguang Wang — AI for Single-Cell Biology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --text:#1a1a1a;--text-2:#4a4a4a;--text-3:#8a8a8a;
+            --link:#2a5a8a;--link-hover:#1a3a5a;
+            --green:#3a7a5a;--green-bg:#f0f7f4;
+            --surface:#fff;--bg:#fafafa;--border:#e0e0e0;--border-light:#eee;
+            --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+            --shadow:0 1px 4px rgba(0,0,0,0.08);
+            --radius:6px;--radius-sm:4px;
+            --sidebar-w:300px;
+        }
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',-apple-system,sans-serif;color:var(--text);background:var(--bg);line-height:1.75;font-size:15px;-webkit-font-smoothing:antialiased}
+
+        .nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border-light)}
+        .nav-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:46px}
+        .nav-name{font-weight:700;font-size:0.9rem;color:var(--text);text-decoration:none}
+        .nav-links{display:flex;gap:24px}
+        .nav-links a{font-size:0.82rem;font-weight:500;color:var(--text-3);text-decoration:none;transition:color .15s}
+        .nav-links a:hover{color:var(--text)}
+
+        .page{display:flex;max-width:1100px;margin:0 auto;min-height:calc(100vh - 46px)}
+
+        .sidebar{
+            width:var(--sidebar-w);flex-shrink:0;
+            position:sticky;top:46px;height:calc(100vh - 46px);overflow-y:auto;
+            display:flex;flex-direction:column;align-items:center;
+            padding:40px 28px 32px;text-align:center;
+        }
+        .avatar-wrap{width:180px;height:180px;border-radius:50%;overflow:hidden;border:3px solid var(--border-light);margin-bottom:20px;flex-shrink:0}
+        .avatar-wrap img{width:100%;height:100%;object-fit:cover;object-position:center top}
+        .sidebar h1{font-family:'Lora',serif;font-size:1.3rem;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:12px}
+        .sidebar .seeking{display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;color:var(--green);background:var(--green-bg);padding:4px 12px;border-radius:16px;margin-bottom:20px}
+        .seeking-pulse{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2.5s infinite}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
+
+        .sidebar-info{width:100%;display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+        .sidebar-info a,.sidebar-info .info-item{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-2);text-decoration:none;padding:4px 0;transition:color .15s}
+        .sidebar-info a:hover{color:var(--text)}
+        .sidebar-info svg{width:14px;height:14px;flex-shrink:0;opacity:.5}
+        .sidebar-info a:hover svg{opacity:.8}
+        .info-item{color:var(--text-2)}
+        .info-item svg{opacity:.5}
+
+        .sidebar-footer{margin-top:auto;font-size:0.7rem;color:var(--text-3);padding-top:16px}
+
+        .content{flex:1;min-width:0;padding:40px 0 80px 48px;border-left:1px solid var(--border-light)}
+        .content-inner{max-width:640px}
+
+        .section{margin-bottom:48px}
+        .section-label{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-3);margin-bottom:6px}
+        .section h2{font-family:'Lora',serif;font-size:1.35rem;font-weight:700;color:var(--text);margin-bottom:16px}
+        .section p{color:var(--text-2);margin-bottom:14px;font-size:0.94rem;line-height:1.8}
+        .section p strong{color:var(--text);font-weight:600}
+
+        .pub-item{border-bottom:1px solid var(--border-light);padding:16px 0}
+        .pub-item:first-child{padding-top:0}
+        .pub-item:last-of-type{border-bottom:none}
+        .pub-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+        .pub-badge{font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding:2px 8px;border-radius:3px}
+        .badge-nm{background:#e8efe8;color:#2a5a3a}.badge-gb{background:#e8eef5;color:#2a4a6a}
+        .badge-gd{background:#f0ece4;color:#6a5a3a}.badge-prep{background:#f5f0e5;color:#7a6a3a}
+        .pub-year{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-3)}
+        .pub-title{font-weight:600;font-size:0.92rem;color:var(--text);margin-bottom:4px;line-height:1.45}
+        .pub-authors{font-size:0.83rem;color:var(--text-2);line-height:1.5;margin-bottom:6px}
+        .pub-authors .me{font-weight:700;color:var(--text)}
+        .pub-links{display:flex;gap:12px}
+        .pub-link{font-size:0.76rem;font-weight:500;color:var(--link);text-decoration:none;transition:color .15s}
+        .pub-link:hover{color:var(--link-hover);text-decoration:underline}
+        .pub-prep{background:#faf8f4;border-radius:var(--radius);padding:14px 16px;margin-top:8px;border-left:2px solid #c5b890}
+
+        .vision-card{border-left:2px solid var(--border);padding:14px 0 14px 20px;margin-bottom:16px}
+        .vision-card h3{font-size:0.9rem;font-weight:700;color:var(--text);margin-bottom:4px}
+        .vision-card p{font-size:0.86rem;color:var(--text-2);margin-bottom:0;line-height:1.7}
+
+        @media(max-width:860px){
+            .page{flex-direction:column}
+            .sidebar{width:100%;height:auto;position:relative;padding:28px 24px;border-bottom:1px solid var(--border-light)}
+            .avatar-wrap{width:110px;height:110px;margin-bottom:14px}
+            .sidebar h1{font-size:1.15rem;margin-bottom:8px}
+            .sidebar .seeking{margin-bottom:16px}
+            .sidebar-info{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+            .content{padding:28px 24px 60px;border-left:none}
+            .sidebar-footer{display:none}
+        }
+        @media(max-width:480px){
+            .sidebar-info{grid-template-columns:1fr 1fr}
+            .nav-links{gap:14px}
+            .nav-links a{font-size:0.75rem}
+            .nav-name{font-size:0.82rem}
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav"><div class="nav-inner">
+    <a href="#" class="nav-name">Shuguang Wang</a>
+    <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#publications">Publications</a>
+        <a href="#interests">Research Interests</a>
+        <a href="CV_Shuguang_Wang.pdf" target="_blank">CV</a>
+    </div>
+</div></div>
+
+<div class="page">
+
+<aside class="sidebar">
+    <div class="avatar-wrap"><img src="avatar.jpg" alt="Shuguang Wang" /></div>
+    <h1>Shuguang Wang</h1>
+    <div class="seeking"><span class="seeking-pulse"></span>Open to positions — Summer 2026</div>
+
+    <div class="sidebar-info">
+        <div class="info-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Shanghai, China
+        </div>
+        <a href="mailto:wangshuguang321@gmail.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 4 10 8 10-8"/></svg>
+            Email
+        </a>
+        <a href="https://x.com/SScottWang" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Twitter
+        </a>
+        <a href="https://github.com/SScottWang" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
+            GitHub
+        </a>
+        <a href="https://www.linkedin.com/in/shuguang-wang-75283b144" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            LinkedIn
+        </a>
+        <a href="https://www.researchgate.net/profile/Shuguang-Wang-11" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.586 0c-.818 0-1.508.19-2.073.565-.563.377-.97.936-1.213 1.68a3.193 3.193 0 0 0-.112.437 8.365 8.365 0 0 0-.078.53 9 9 0 0 0-.032.59V4a8.97 8.97 0 0 0 .024.548c.01.18.027.35.052.51.026.16.06.313.1.46.04.147.088.288.148.42.06.13.132.256.216.372.085.116.182.226.293.324.11.1.234.19.375.264.14.075.296.14.468.184a1.9 1.9 0 0 0 .552.07c.398 0 .754-.105 1.063-.316.31-.21.555-.497.735-.86.18-.362.305-.78.37-1.254a8.45 8.45 0 0 0 .098-1.316V4a8.7 8.7 0 0 0-.065-1.082 5.5 5.5 0 0 0-.2-.964 3.15 3.15 0 0 0-.398-.82A2.25 2.25 0 0 0 19.586 0zM6.7 11.3c-.84 0-1.525.19-2.058.567-.53.378-.91.882-1.14 1.512a5.46 5.46 0 0 0-.34 1.948v.142c0 .706.1 1.347.302 1.923.203.576.514 1.06.934 1.45.42.392.96.607 1.62.607.3 0 .58-.044.84-.13.26-.088.488-.212.687-.373.198-.16.37-.346.513-.558.143-.21.262-.436.357-.677h.028v1.578H12V5.2H8.543v6.1H6.7z"/></svg>
+            ResearchGate
+        </a>
+        <a href="https://scholar.google.com/citations?user=2BlaNswAAAAJ&hl=en" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769 0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
+            Google Scholar
+        </a>
+    </div>
+
+    <div class="sidebar-footer">&copy; 2026 Shuguang Wang</div>
+</aside>
+
+<main class="content"><div class="content-inner">
+
+    <div class="section" id="about">
+        <div class="section-label">Background</div>
+        <h2>About Me</h2>
+        <p>I am a Ph.D. candidate in Bioinformatics at Tongji University, graduating in June 2026. My research sits at the intersection of <strong>AI and single-cell biology</strong>, with a focus on systematic benchmarking, deep generative modeling, and multi-omics data integration.</p>
+        <p>My doctoral work includes two co-first-author publications in <strong>Nature Methods</strong> — large-scale evaluation studies that defined gold standards for single-cell multi-modal integration and perturbation response prediction. I also contributed to developing deep generative models for multi-omics profiling (<strong>Genome Biology</strong>), and applied spatial transcriptomics to uncover the regulatory role of CCN1 in microglia spatial organization (<strong>Genes &amp; Diseases</strong>).</p>
+    </div>
+
+    <div class="section" id="publications">
+        <div class="section-label">Selected Work</div>
+        <h2>Publications</h2>
+
+        <div class="pub-item"><div class="pub-meta"><span class="pub-badge badge-nm">Nature Methods</span><span class="pub-year">2025</span></div>
+        <div class="pub-title">Benchmarking Single-Cell Multi-Modal Data Integrations</div>
+        <div class="pub-authors">Fu, S.*, <span class="me">Wang, S.*</span>, Si, D., Li, G., Gao, Y., Liu, Q.</div>
+        <div class="pub-links"><a class="pub-link" href="https://doi.org/10.1038/s41592-025-02737-9" target="_blank">Paper &rarr;</a> <a class="pub-link" href="https://github.com/bm2-lab/SCMMI_Benchmark" target="_blank">GitHub &rarr;</a></div></div>
+
+        <div class="pub-item"><div class="pub-meta"><span class="pub-badge badge-nm">Nature Methods</span><span class="pub-year">2025</span></div>
+        <div class="pub-title">Benchmarking Algorithms for Generalizable Single-Cell Perturbation Response Prediction</div>
+        <div class="pub-authors">Wei, Z.*, Wang, Y.*, Gao, Y.*, <span class="me">Wang, S.*</span>, Li, P., Si, D., et al.</div>
+        <div class="pub-links"><a class="pub-link" href="https://doi.org/10.1038/s41592-025-02980-0" target="_blank">Paper &rarr;</a> <a class="pub-link" href="https://github.com/bm2-lab/scPerturBench" target="_blank">GitHub &rarr;</a></div></div>
+
+        <div class="pub-item"><div class="pub-meta"><span class="pub-badge badge-gb">Genome Biology</span><span class="pub-year">2022</span></div>
+        <div class="pub-title">A Deep Generative Model for Multi-View Profiling of Single-Cell RNA-seq and ATAC-seq Data</div>
+        <div class="pub-authors">Li, G., Fu, S., <span class="me">Wang, S.</span>, et al.</div>
+        <div class="pub-links"><a class="pub-link" href="https://doi.org/10.1186/s13059-021-02595-6" target="_blank">Paper &rarr;</a></div></div>
+
+        <div class="pub-item"><div class="pub-meta"><span class="pub-badge badge-gd">Genes &amp; Diseases</span><span class="pub-year">2025</span></div>
+        <div class="pub-title">Revealed the Regulatory Role of CCN1 to Microglia Distribution through Region-Specific Cellular Interactions</div>
+        <div class="pub-authors">Bai, Z., Chang, Z., <span class="me">Wang, S.</span>, et al.</div>
+        <div class="pub-links"><a class="pub-link" href="https://doi.org/10.1016/j.gendis.2025.101969" target="_blank">Paper &rarr;</a></div></div>
+
+        <div class="pub-prep"><div class="pub-meta"><span class="pub-badge badge-prep">In Preparation</span></div>
+        <div class="pub-title">Systematic Evaluation of RNA Velocity and Spatiotemporal Dynamics Inference Methods in Single-Cell Biology</div>
+        <div class="pub-authors"><span class="me">Wang, S.</span>, ..., Liu, Q.</div></div>
+
+    </div>
+
+    <div class="section" id="interests">
+        <div class="section-label">Looking Forward</div>
+        <h2>Research Interests</h2>
+        <div class="vision-card"><h3>Spatiotemporal Virtual Cell Modeling</h3><p>Integrating multi-omics data with foundation models to build dynamic, multi-dimensional virtual cell systems capable of simulating cellular behavior over space and time — enabling in silico perturbation discovery and predictive modeling of cell fate.</p></div>
+        <div class="vision-card"><h3>Multi-Modal Biomedical Data Integration</h3><p>Bridging multi-omics biological data with clinical and medical imaging modalities to create unified analytical frameworks — translating molecular insights into actionable knowledge for precision medicine and therapeutic development.</p></div>
+        <div class="vision-card"><h3>Defining Problems and Gold Standards for Computational Biology</h3><p>Identifying fundamental biological questions that can be rigorously formulated as computational challenges, and establishing principled evaluation frameworks and gold-standard benchmarks to guide the development of next-generation methods.</p></div>
+    </div>
+
+</div></main>
+
+</div>
+
+</body>
+</html>
